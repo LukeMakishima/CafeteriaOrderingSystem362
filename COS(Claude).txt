@@ -1,0 +1,356 @@
+import { useState } from 'react';
+import { ShoppingCart, Menu, Trash2, Plus, Minus, ChevronLeft } from 'lucide-react';
+
+export default function CafeteriaOrderingSystem() {
+  // Menu data
+  const menuItems = [
+    { id: 1, name: "Cheeseburger", price: 7.99, category: "Main Dishes", description: "Beef patty with cheese, lettuce, tomato, and special sauce" },
+    { id: 2, name: "Chicken Sandwich", price: 6.99, category: "Main Dishes", description: "Grilled chicken breast with mayo, lettuce, and tomato" },
+    { id: 3, name: "Caesar Salad", price: 5.99, category: "Salads", description: "Romaine lettuce with croutons, parmesan, and Caesar dressing" },
+    { id: 4, name: "Veggie Wrap", price: 6.49, category: "Main Dishes", description: "Fresh vegetables with hummus in a whole wheat wrap" },
+    { id: 5, name: "French Fries", price: 2.99, category: "Sides", description: "Crispy golden fries with a pinch of salt" },
+    { id: 6, name: "Onion Rings", price: 3.49, category: "Sides", description: "Crispy battered onion rings" },
+    { id: 7, name: "Chocolate Cake", price: 4.49, category: "Desserts", description: "Rich chocolate cake with fudge icing" },
+    { id: 8, name: "Soda", price: 1.99, category: "Drinks", description: "Your choice of carbonated beverage" },
+    { id: 9, name: "Coffee", price: 2.49, category: "Drinks", description: "Freshly brewed coffee" },
+    { id: 10, name: "Garden Salad", price: 4.99, category: "Salads", description: "Mixed greens, cucumber, tomato, and choice of dressing" },
+  ];
+
+  // State management
+  const [cart, setCart] = useState([]);
+  const [view, setView] = useState('menu'); // 'menu', 'cart', 'checkout'
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [orderComplete, setOrderComplete] = useState(false);
+  const [customerInfo, setCustomerInfo] = useState({
+    name: '',
+    email: '',
+    pickupTime: ''
+  });
+
+  // Get unique categories for filtering
+  const categories = ['All', ...new Set(menuItems.map(item => item.category))];
+
+  // Filter menu items by category
+  const filteredMenu = selectedCategory === 'All' 
+    ? menuItems 
+    : menuItems.filter(item => item.category === selectedCategory);
+
+  // Add item to cart
+  const addToCart = (item) => {
+    const existingItem = cart.find(cartItem => cartItem.id === item.id);
+    if (existingItem) {
+      setCart(cart.map(cartItem => 
+        cartItem.id === item.id 
+          ? { ...cartItem, quantity: cartItem.quantity + 1 } 
+          : cartItem
+      ));
+    } else {
+      setCart([...cart, { ...item, quantity: 1 }]);
+    }
+  };
+
+  // Remove item from cart
+  const removeFromCart = (id) => {
+    setCart(cart.filter(item => item.id !== id));
+  };
+
+  // Update item quantity
+  const updateQuantity = (id, change) => {
+    setCart(cart.map(item => {
+      if (item.id === id) {
+        const newQuantity = item.quantity + change;
+        return newQuantity > 0 ? { ...item, quantity: newQuantity } : item;
+      }
+      return item;
+    }));
+  };
+
+  // Calculate total price
+  const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  // Handle checkout form changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setCustomerInfo({ ...customerInfo, [name]: value });
+  };
+
+  // Submit order
+  const submitOrder = (e) => {
+    e.preventDefault();
+    setOrderComplete(true);
+  };
+
+  // Reset order and return to menu
+  const startNewOrder = () => {
+    setCart([]);
+    setCustomerInfo({ name: '', email: '', pickupTime: '' });
+    setOrderComplete(false);
+    setView('menu');
+  };
+
+  return (
+    <div className="w-full max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+      {/* Header */}
+      <div className="bg-blue-600 text-white p-4">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Campus Cafeteria</h1>
+          <div className="flex gap-4">
+            <button 
+              className="flex items-center gap-2 px-3 py-1 rounded bg-blue-700 hover:bg-blue-800"
+              onClick={() => setView('menu')}
+            >
+              <Menu size={18} />
+              <span>Menu</span>
+            </button>
+            <button 
+              className="flex items-center gap-2 px-3 py-1 rounded bg-blue-700 hover:bg-blue-800 relative"
+              onClick={() => setView('cart')}
+            >
+              <ShoppingCart size={18} />
+              <span>Cart</span>
+              {cart.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {cart.reduce((sum, item) => sum + item.quantity, 0)}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="p-4">
+        {/* Menu View */}
+        {view === 'menu' && (
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Today's Menu</h2>
+            
+            {/* Category Filter */}
+            <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+              {categories.map(category => (
+                <button
+                  key={category}
+                  className={`px-3 py-1 rounded-full text-sm ${
+                    selectedCategory === category 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-200 hover:bg-gray-300'
+                  }`}
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+            
+            {/* Menu Items */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filteredMenu.map(item => (
+                <div key={item.id} className="border rounded-lg p-4 hover:shadow-md">
+                  <div className="flex justify-between">
+                    <h3 className="font-semibold">{item.name}</h3>
+                    <span className="font-semibold">${item.price.toFixed(2)}</span>
+                  </div>
+                  <p className="text-gray-600 text-sm mt-1">{item.description}</p>
+                  <div className="mt-3 flex justify-end">
+                    <button
+                      className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1 hover:bg-blue-700"
+                      onClick={() => addToCart(item)}
+                    >
+                      <Plus size={16} />
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Cart View */}
+        {view === 'cart' && (
+          <div>
+            <div className="flex items-center mb-4">
+              <button
+                className="mr-2 text-blue-600 hover:text-blue-800"
+                onClick={() => setView('menu')}
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <h2 className="text-xl font-semibold">Your Order</h2>
+            </div>
+            
+            {cart.length === 0 ? (
+              <div className="text-center py-10">
+                <p className="text-gray-500 mb-4">Your cart is empty</p>
+                <button
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                  onClick={() => setView('menu')}
+                >
+                  Browse Menu
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="border-b pb-2 mb-4">
+                  {cart.map(item => (
+                    <div key={item.id} className="flex justify-between items-center py-2">
+                      <div className="flex-1">
+                        <h3 className="font-medium">{item.name}</h3>
+                        <p className="text-gray-600 text-sm">${item.price.toFixed(2)}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          className="p-1 rounded-full hover:bg-gray-200"
+                          onClick={() => updateQuantity(item.id, -1)}
+                          disabled={item.quantity <= 1}
+                        >
+                          <Minus size={16} />
+                        </button>
+                        <span className="w-8 text-center">{item.quantity}</span>
+                        <button 
+                          className="p-1 rounded-full hover:bg-gray-200"
+                          onClick={() => updateQuantity(item.id, 1)}
+                        >
+                          <Plus size={16} />
+                        </button>
+                        <button 
+                          className="p-1 rounded-full text-red-500 hover:bg-red-100"
+                          onClick={() => removeFromCart(item.id)}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-between items-center font-semibold text-lg mb-6">
+                  <span>Total:</span>
+                  <span>${totalPrice.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                    onClick={() => setView('checkout')}
+                  >
+                    Proceed to Checkout
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Checkout View */}
+        {view === 'checkout' && !orderComplete && (
+          <div>
+            <div className="flex items-center mb-4">
+              <button
+                className="mr-2 text-blue-600 hover:text-blue-800"
+                onClick={() => setView('cart')}
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <h2 className="text-xl font-semibold">Checkout</h2>
+            </div>
+            
+            <div className="bg-gray-50 p-4 rounded-lg mb-4">
+              <h3 className="font-medium mb-2">Order Summary</h3>
+              {cart.map(item => (
+                <div key={item.id} className="flex justify-between text-sm py-1">
+                  <span>{item.quantity}x {item.name}</span>
+                  <span>${(item.price * item.quantity).toFixed(2)}</span>
+                </div>
+              ))}
+              <div className="border-t mt-2 pt-2 font-semibold flex justify-between">
+                <span>Total</span>
+                <span>${totalPrice.toFixed(2)}</span>
+              </div>
+            </div>
+            
+            <form className="space-y-4" onSubmit={submitOrder}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={customerInfo.name}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded-lg"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={customerInfo.email}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded-lg"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Pickup Time</label>
+                <input
+                  type="time"
+                  name="pickupTime"
+                  value={customerInfo.pickupTime}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded-lg"
+                  required
+                />
+              </div>
+              <div className="flex justify-end pt-4">
+                <button
+                  type="submit"
+                  className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
+                >
+                  Place Order
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Order Complete View */}
+        {view === 'checkout' && orderComplete && (
+          <div className="text-center py-10">
+            <div className="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold mb-2">Thank You!</h2>
+            <p className="text-gray-600 mb-2">Your order has been placed successfully.</p>
+            <p className="font-medium mb-6">Order #: {Math.floor(Math.random() * 10000)}</p>
+            <div className="bg-gray-50 p-4 rounded-lg mx-auto max-w-md mb-6 text-left">
+              <h3 className="font-medium mb-2">Order Details</h3>
+              <p><span className="font-medium">Name:</span> {customerInfo.name}</p>
+              <p><span className="font-medium">Pickup Time:</span> {customerInfo.pickupTime}</p>
+              <div className="border-t mt-2 pt-2">
+                <p className="font-medium">Items:</p>
+                {cart.map(item => (
+                  <div key={item.id} className="flex justify-between text-sm py-1">
+                    <span>{item.quantity}x {item.name}</span>
+                    <span>${(item.price * item.quantity).toFixed(2)}</span>
+                  </div>
+                ))}
+                <div className="border-t mt-2 pt-2 font-semibold flex justify-between">
+                  <span>Total</span>
+                  <span>${totalPrice.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+            <button
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              onClick={startNewOrder}
+            >
+              Start New Order
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
