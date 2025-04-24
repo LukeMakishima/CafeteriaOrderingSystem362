@@ -35,6 +35,15 @@ function loadCheckout() {
       return;
     }
   
+    fetch('http://localhost:3000/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, time, cart })
+    })
+    .then(res => res.json())
+    .then(data => console.log('[✓] Order sent to backend:', data.message))
+    .catch(err => console.error('[x] Error sending order:', err));
+  
     let total = 0;
     let summary = `
       <div class="modal">
@@ -51,14 +60,13 @@ function loadCheckout() {
     });
   
     summary += `
-    <tr><td colspan="2"><strong>Total</strong></td><td><strong>$${total.toFixed(2)}</strong></td></tr>
-    </table>
-    <div style="margin-top: 1rem;">
-    <button onclick="window.location.href='index.html'">Back to Menu</button>
-    </div>
-    </div>
+        <tr><td colspan="2"><strong>Total</strong></td><td><strong>$${total.toFixed(2)}</strong></td></tr>
+        </table>
+        <div style="margin-top: 1rem;">
+          <button onclick="window.location.href='index.html'">Back to Menu</button>
+        </div>
+      </div>
     `;
-
   
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
@@ -69,6 +77,6 @@ function loadCheckout() {
     localStorage.removeItem('name');
     localStorage.removeItem('email');
     localStorage.removeItem('pickupTime');
-  }
+  }  
   
-  loadCheckout();  
+  loadCheckout();
