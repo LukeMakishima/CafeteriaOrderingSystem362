@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cafeteria Ordering System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Frozen Yogurt Ordering System</h1>
+
+  <!-- Category Filter -->
+  <div class="filter">
+    <label>Filter by Category:</label>
+    <select id="categoryFilter" onchange="filterMenu()"></select>
+  </div>
+
+  <!-- Menu Items -->
+  <div id="menu"></div>
+
+  <!-- Cart Section -->
+  <h2>Your Cart</h2>
+  <ul id="cartList"></ul>
+  <p id="emptyCartMsg" style="display:none;"><em>Your cart is empty.</em></p>
+  <p><strong>Total: $<span id="total">0.00</span></strong></p>
+
+  <!-- Customer Info Form -->
+  <section class="form-section">
+    <h3>Customer Info</h3>
+    <form id="orderForm">
+      <input type="text" id="name" placeholder="Name" required>
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="time" id="pickupTime" required>
+      <button type="submit">Go to Checkout</button>
+    </form>
+  </section>
+
+  <!-- Toast and Modal will be injected dynamically by JS -->
+  <script src="script.js"></script>
+</body>
+</html>

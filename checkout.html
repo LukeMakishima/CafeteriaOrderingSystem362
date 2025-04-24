@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Checkout - Froyo Ordering</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Review & Checkout</h1>
+
+  <section class="cart-section">
+    <h2>Your Order</h2>
+    <ul id="checkoutCart"></ul>
+    <p><strong>Total: $<span id="checkoutTotal">0.00</span></strong></p>
+  </section>
+
+  <section class="form-section">
+    <h3>Customer Info</h3>
+    <form id="checkoutForm" onsubmit="finalizeOrder(event)">
+      <input type="text" id="name" placeholder="Name" required>
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="time" id="pickupTime" required>
+      <button type="submit">Place Order</button>
+    </form>
+  </section>
+
+  <script src="checkout.js"></script>
+</body>
+</html>
