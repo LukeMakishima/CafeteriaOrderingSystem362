@@ -5,6 +5,8 @@ const menuItems = [
   { id: 3, name: "Vanilla", price: 6.99, category: "Main Flavors", description: "Vanilla Froyo", image: "images/vanilla.png" },
   { id: 4, name: "Mango Sorbet", price: 9.99, category: "Vegan Options", description: "Dairy Free Mango Sorbet", image: "images/mango.webp" },
   { id: 5, name: "Chocolate Chips", price: 1.99, category: "Toppings", description: "Extra Toppings", image: "images/chocolatechips.png" },
+  { id: 6, name: "Nuts", price: 1.99, category: "Toppings", description: "Extra Toppings", image: "images/nuts.png" },
+  { id: 7, name: "Dairy Free Cookies and Cream", price: 9.99, category: "Vegan Options", description: "Dairy Free Cookies & Cream", image: "images/cookiesandcream.jpg" },
 ];
 
 const categories = ['All', ...new Set(menuItems.map(item => item.category))];
@@ -154,19 +156,63 @@ filterMenu();
 updateCart();
 
 document.getElementById('orderForm').addEventListener('submit', function(e) {
-e.preventDefault();
-const name = document.getElementById('name').value.trim();
-const email = document.getElementById('email').value.trim();
-const time = document.getElementById('pickupTime').value;
+  e.preventDefault();
 
-localStorage.setItem('name', name);
-localStorage.setItem('email', email);
-localStorage.setItem('pickupTime', time);
+  const nameField = document.getElementById('name');
+  const emailField = document.getElementById('email');
+  const timeField = document.getElementById('pickupTime');
 
-if (cart.length === 0) {
-  alert("Your cart is empty.");
-  return;
+  // Clear old errors
+  document.querySelectorAll('.error-msg').forEach(el => el.remove());
+  [nameField, emailField, timeField].forEach(f => f.classList.remove('input-error'));
+
+  validateField(nameField, 'name');
+  validateField(emailField, 'email');
+  validateField(timeField, 'time');
+
+  const hasError = document.querySelectorAll('.input-error').length > 0;
+
+  if (hasError) return;
+
+  localStorage.setItem('name', nameField.value.trim());
+  localStorage.setItem('email', emailField.value.trim());
+  localStorage.setItem('pickupTime', timeField.value);
+
+  if (cart.length === 0) {
+    alert("Your cart is empty.");
+    return;
+  }
+
+  window.location.href = 'checkout.html';
+});
+
+
+function validateField(field, type) {
+  const value = field.value.trim();
+  const next = field.nextElementSibling;
+
+  if (next && next.classList.contains('error-msg')) next.remove();
+  field.classList.remove('input-error');
+
+  let error = null;
+
+  if (type === 'name' && !value) error = "Name is required.";
+  if (type === 'email') {
+    if (!value) error = "Email is required.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) error = "Enter a valid email.";
+  }
+  if (type === 'time' && !value) error = "Pickup time is required.";
+
+  if (error) {
+    const msg = document.createElement('div');
+    msg.className = 'error-msg';
+    msg.textContent = error;
+    field.classList.add('input-error');
+    field.parentNode.insertBefore(msg, field.nextSibling);
+  }
 }
 
-window.location.href = 'checkout.html';
-});
+// === Live validation events for main order form ===
+document.getElementById('name').addEventListener('input', e => validateField(e.target, 'name'));
+document.getElementById('email').addEventListener('input', e => validateField(e.target, 'email'));
+document.getElementById('pickupTime').addEventListener('input', e => validateField(e.target, 'time'));
