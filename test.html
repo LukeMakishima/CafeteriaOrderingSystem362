@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Auto Test Order</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f2f2f2; padding: 2rem; }
+    .modal { background: white; padding: 1rem 2rem; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    table { width: 100%; margin-top: 1rem; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    h2 { color: #2c3e50; }
+  </style>
+</head>
+<body>
+  <h1>Running Automated Test Order...</h1>
+  <div id="output"></div>
+
+  <script>
+    const menuItems = [
+      { name: "Chocolate", price: 7.99 },
+      { name: "Strawberry", price: 7.99 },
+      { name: "Vanilla", price: 6.99 },
+      { name: "Mango Sorbet", price: 9.99 },
+      { name: "Chocolate Chips", price: 1.99 },
+      { name: "Nuts", price: 1.99 },
+      { name: "Cookies and Cream (Vegan)", price: 9.99 }
+    ];
+
+    function getRandomCartItems() {
+      const itemCount = Math.floor(Math.random() * 4) + 1; // 1–4 items
+      const selected = [];
+
+      // Random unique items
+      const chosenIndices = new Set();
+      while (chosenIndices.size < itemCount) {
+        const idx = Math.floor(Math.random() * menuItems.length);
+        chosenIndices.add(idx);
+      }
+
+      for (const idx of chosenIndices) {
+        const item = menuItems[idx];
+        const quantity = Math.floor(Math.random() * 3) + 1; // 1–3 quantity
+        selected.push({ ...item, quantity });
+      }
+
+      return selected;
+    }
+
+    const randomId = Math.floor(Math.random() * 10000);
+    const cart = getRandomCartItems();
+
+    const testOrder = {
+      name: "TestUser" + randomId,
+      email: "test" + randomId + "@example.com",
+      time: "12:34",
+      cart: cart
+    };
+
+    fetch('http://localhost:3000/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(testOrder)
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log('[✓] Order sent:', data.message);
+      displayReceipt(testOrder);
+    })
+    .catch(err => {
+      console.error('[x] Error:', err);
+      document.getElementById('output').innerHTML = `<p style="color:red;">❌ Error: ${err.message}</p>`;
+    });
+
+    function displayReceipt(order) {
+      let total = 0;
+      let html = `
+        <div class="modal">
+          <h2>✅ Test Order for ${order.name}</h2>
+          <p>Email: ${order.email}</p>
+          <p>Pickup Time: ${order.time}</p>
+          <table>
+            <tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr>
+      `;
+
+      order.cart.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+        html += `
+          <tr>
+            <td>${item.name}</td>
+            <td>${item.quantity}</td>
+            <td>$${item.price.toFixed(2)}</td>
+            <td>$${itemTotal.toFixed(2)}</td>
+          </tr>`;
+      });
+
+      html += `
+        <tr><td colspan="3"><strong>Total</strong></td><td><strong>$${total.toFixed(2)}</strong></td></tr>
+        </table>
+      </div>
+      `;
+
+      document.getElementById('output').innerHTML = html;
+    }
+  </script>
+</body>
+</html>
